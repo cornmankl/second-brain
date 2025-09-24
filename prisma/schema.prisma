@@ -19,14 +19,309 @@ model User {
   name      String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  
+  // Relations to all databases
+  inboxItems      InboxItem[]
+  tasks           Task[]
+  ideas           Idea[]
+  knowledgeItems  KnowledgeItem[]
+  srsCards        SRSCard[]
+  areas           Area[]
+  reviews         Review[]
 }
 
-model Post {
-  id        String   @id @default(cuid())
-  title     String
-  content   String?
-  published Boolean  @default(false)
-  authorId  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model InboxItem {
+  id          String   @id @default(cuid())
+  title       String
+  type        InboxType
+  priority    Priority
+  processed   Boolean  @default(false)
+  quickNote   String?
+  tags        String?  // JSON string of tags array
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Task {
+  id             String      @id @default(cuid())
+  name           String
+  status         TaskStatus  @default(NOT_STARTED)
+  type           TaskType    @default(TASK)
+  priority       TaskPriority @default(P3_MEDIUM)
+  dueDate        DateTime?
+  energyRequired EnergyLevel @default(MEDIUM)
+  context        String?     // JSON string of contexts array
+  timeEstimate   Int?        // in minutes
+  actualTime     Int?        // in minutes
+  projectId      String?
+  project        Task?       @relation("TaskSubtasks", fields: [projectId], references: [id])
+  subtasks       Task[]      @relation("TaskSubtasks")
+  areas          Area[]      @relation("TaskAreas")
+  relatedIdeas   Idea[]      @relation("TaskIdeas")
+  knowledgeItems KnowledgeItem[] @relation("TaskKnowledge")
+  nextAction     String?
+  notes          String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  
+  userId         String
+  user           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Idea {
+  id               String        @id @default(cuid())
+  title            String
+  stage            IdeaStage     @default(SEED)
+  category         IdeaCategory  @default(PERSONAL)
+  potentialImpact  ImpactLevel   @default(MEDIUM)
+  effortRequired   EffortLevel   @default(MEDIUM)
+  relatedIdeas     Idea[]        @relation("IdeaConnections")
+  connectedIdeas   Idea[]        @relation("IdeaConnections")
+  resources        KnowledgeItem[] @relation("IdeaResources")
+  nextExperiment   String?
+  successMetrics   String?
+  notes            String?
+  lastReviewed     DateTime?
+  reviewCount      Int           @default(0)
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  
+  userId           String
+  user             User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tasks            Task[]        @relation("TaskIdeas")
+}
+
+model KnowledgeItem {
+  id               String           @id @default(cuid())
+  title            String
+  type             KnowledgeType    @default(ARTICLE)
+  status           ProcessingStatus @default(TO_PROCESS)
+  sourceUrl        String?
+  author           String?
+  dateConsumed     DateTime?
+  keyConcepts      String?          // JSON string of concepts array
+  permanentNotes   String?
+  originalNotes    String?
+  quality          QualityLevel     @default(GOOD)
+  tags             String?          // JSON string of tags array
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  
+  userId           String
+  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ideas            Idea[]           @relation("IdeaResources")
+  tasks            Task[]           @relation("TaskKnowledge")
+  srsCards         SRSCard[]        @relation("SRSCards")
+  areas            Area[]           @relation("AreaResources")
+}
+
+model SRSCard {
+  id                 String           @id @default(cuid())
+  question           String
+  answer             String
+  type               CardType         @default(FACT)
+  difficulty         DifficultyLevel  @default(MEDIUM)
+  nextReviewDate     DateTime         @default(now())
+  interval           Int              @default(1) // days
+  repetitionCount    Int              @default(0)
+  lastPerformance    PerformanceLevel @default(GOOD)
+  understandingLevel UnderstandingLevel @default(WORKING)
+  relatedCards       SRSCard[]        @relation("SRSCardConnections")
+  connectedCards     SRSCard[]        @relation("SRSCardConnections")
+  context            String?
+  whyMatters         String?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  
+  userId             String
+  user               User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sourceId           String?
+  source             KnowledgeItem?   @relation("SRSCards", fields: [sourceId], references: [id])
+}
+
+model Area {
+  id               String        @id @default(cuid())
+  areaName         String
+  type             AreaType      @default(PERSONAL)
+  visionStatement  String?
+  currentFocus     String?
+  quarterlyGoals   String?
+  keyMetrics       String?
+  lastReview       DateTime?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+  
+  userId           String
+  user             User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tasks            Task[]        @relation("TaskAreas")
+  resources        KnowledgeItem[] @relation("AreaResources")
+}
+
+model Review {
+  id                String        @id @default(cuid())
+  reviewDate        DateTime      @unique
+  type              ReviewType    @default(DAILY)
+  wins              String?
+  challenges        String?
+  lessonsLearned    String?
+  energyLevel       EnergyLevel   @default(MEDIUM)
+  productivityScore Int?          @default(5)
+  keyDecisions      String?
+  nextPeriodFocus   String?
+  habitsTracking    String?       // JSON string of habits array
+  gratitude         String?
+  systemImprovements String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  
+  userId            String
+  user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Enums
+enum InboxType {
+  TASK
+  IDEA
+  NOTE
+  QUESTION
+  RESOURCE
+}
+
+enum Priority {
+  URGENT
+  HIGH
+  NORMAL
+  LOW
+}
+
+enum TaskStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  BLOCKED
+  COMPLETE
+  CANCELLED
+}
+
+enum TaskType {
+  TASK
+  PROJECT
+  MILESTONE
+}
+
+enum TaskPriority {
+  P1_CRITICAL
+  P2_HIGH
+  P3_MEDIUM
+  P4_LOW
+}
+
+enum EnergyLevel {
+  HIGH_FOCUS
+  MEDIUM
+  LOW
+}
+
+enum IdeaStage {
+  SEED
+  SPROUTING
+  GROWING
+  HARVEST
+  DORMANT
+  PRUNED
+}
+
+enum IdeaCategory {
+  BUSINESS
+  CREATIVE
+  TECHNICAL
+  PERSONAL
+  RESEARCH
+}
+
+enum ImpactLevel {
+  TEN_X
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum EffortLevel {
+  MASSIVE
+  LARGE
+  MEDIUM
+  SMALL
+}
+
+enum KnowledgeType {
+  ARTICLE
+  BOOK
+  VIDEO
+  COURSE
+  PODCAST
+  PAPER
+  PERSONAL_NOTE
+}
+
+enum ProcessingStatus {
+  TO_PROCESS
+  PROCESSING
+  PROCESSED
+  REFERENCE
+}
+
+enum QualityLevel {
+  EVERGREEN
+  GOOD
+  OKAY
+  POOR
+}
+
+enum CardType {
+  FACT
+  CONCEPT
+  PROCESS
+  CONNECTION
+  PROBLEM
+}
+
+enum DifficultyLevel {
+  EASY
+  MEDIUM
+  HARD
+  EXPERT
+}
+
+enum PerformanceLevel {
+  PERFECT
+  GOOD
+  HARD
+  AGAIN
+}
+
+enum UnderstandingLevel {
+  SURFACE
+  WORKING
+  DEEP
+  TEACHING
+}
+
+enum AreaType {
+  PROFESSIONAL
+  PERSONAL
+  HEALTH
+  RELATIONSHIPS
+  FINANCIAL
+  LEARNING
+  CREATIVE
+}
+
+enum ReviewType {
+  DAILY
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+  ANNUAL
 }
