@@ -359,7 +359,7 @@ export default function Home() {
                     <SelectItem value="LOW">🟢 Low</SelectItem>
                   </SelectContent>
                 </Select>
-                <Button onClick={handleCreateItem} disabled={!newItemTitle.trim() || loading}>
+                <Button onClick={handleCreateItem} disabled={!newItemTitle.trim() || inboxLoading}>
                   <Plus className="h-4 w-4" />
                 </Button>
               </div>
@@ -513,7 +513,7 @@ export default function Home() {
                           size="sm" 
                           variant="outline"
                           onClick={() => deleteInboxItem(item.id)}
-                          disabled={loading}
+                          disabled={inboxLoading}
                         >
                           <Trash2 className="h-3 w-3" />
                         </Button>
@@ -611,6 +611,7 @@ export default function Home() {
                           type: 'TASK' as any,
                           priority: 'P3_MEDIUM' as any,
                           status: 'NOT_STARTED' as any,
+                          dueDate: null,
                           energyRequired: 'MEDIUM' as any,
                           context: null,
                           timeEstimate: null,
@@ -1246,6 +1247,7 @@ export default function Home() {
                           answer: answer.trim(),
                           type: 'FACT' as any,
                           difficulty: 'MEDIUM' as any,
+                          sourceId: null,
                           context: context || null,
                           whyMatters: whyMatters || null
                         })

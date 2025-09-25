@@ -4,9 +4,10 @@ import { db } from '@/lib/db'
 // PUT update inbox item
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const params = await context.params
     const body = await request.json()
     const { title, type, priority, processed, quickNote, tags } = body
 
@@ -33,9 +34,10 @@ export async function PUT(
 // DELETE inbox item
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const params = await context.params
     await db.inboxItem.delete({
       where: { id: params.id }
     })

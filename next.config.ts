@@ -11,8 +11,8 @@ const nextConfig: NextConfig = {
   // Optimize for Vercel deployment
   output: 'standalone',
   experimental: {
-    // Enable server actions for better performance
-    serverActions: true,
+    // Enable optimized features for Vercel
+    optimizePackageImports: ['lucide-react', '@radix-ui/react-*'],
   },
   // Configure images for Vercel
   images: {

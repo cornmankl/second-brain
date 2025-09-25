@@ -4,9 +4,10 @@ import { db } from '@/lib/db'
 // PUT update task
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  routeContext: { params: Promise<{ id: string }> }
 ) {
   try {
+    const params = await routeContext.params
     const body = await request.json()
     const { 
       name, 
@@ -106,9 +107,10 @@ export async function PUT(
 // DELETE task
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  routeContext: { params: Promise<{ id: string }> }
 ) {
   try {
+    const params = await routeContext.params
     await db.task.delete({
       where: { id: params.id }
     })

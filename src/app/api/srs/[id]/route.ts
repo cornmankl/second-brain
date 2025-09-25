@@ -4,9 +4,10 @@ import { db } from '@/lib/db'
 // PUT update SRS card
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  routeContext: { params: Promise<{ id: string }> }
 ) {
   try {
+    const params = await routeContext.params
     const body = await request.json()
     const { 
       question, 
@@ -114,9 +115,10 @@ export async function PUT(
 // DELETE SRS card
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  routeContext: { params: Promise<{ id: string }> }
 ) {
   try {
+    const params = await routeContext.params
     await db.sRSCard.delete({
       where: { id: params.id }
     })

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { PerformanceLevel, UnderstandingLevel, CardType, DifficultyLevel } from '@prisma/client'
 
 // GET all SRS cards
 export async function GET(request: NextRequest) {
@@ -62,13 +63,13 @@ export async function POST(request: NextRequest) {
     const cardData = {
       question,
       answer,
-      type: type || 'FACT',
-      difficulty: difficulty || 'MEDIUM',
+      type: (type as CardType) || CardType.FACT,
+      difficulty: (difficulty as DifficultyLevel) || DifficultyLevel.MEDIUM,
       nextReviewDate: new Date(),
       interval: 1,
       repetitionCount: 0,
-      lastPerformance: 'GOOD',
-      understandingLevel: 'WORKING',
+      lastPerformance: PerformanceLevel.GOOD,
+      understandingLevel: UnderstandingLevel.WORKING,
       sourceId,
       context,
       whyMatters,
