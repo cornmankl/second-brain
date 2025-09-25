@@ -8,8 +8,7 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: false,
   },
-  // Optimize for Vercel deployment
-  output: 'standalone',
+  // Remove standalone output for better compatibility
   experimental: {
     // Enable optimized features for Vercel
     optimizePackageImports: ['lucide-react', '@radix-ui/react-*'],
